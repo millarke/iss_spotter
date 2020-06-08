@@ -1,7 +1,7 @@
 // It will require and run our main fetch function.
 
 // index.js
-const { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes, nextISSTimesForMyLocation } = require('./iss');
+const { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes, nextISSTimesForMyLocation } = require('./issTEST');
 
 // TEMPPPOOORORAARRRYYYYYY
 // let ip = '184.175.55.222';
@@ -48,11 +48,12 @@ const printPassTimes = function(passTimes) {
   }
 };
 
-
-nextISSTimesForMyLocation((error, passTimes) => {
+const checkPassTimes = function(error, passTimes) {
   if (error) {
     return console.log("It didn't work!", error);
   }
   // success, print out the deets!
   printPassTimes(passTimes);
-});
+};
+
+nextISSTimesForMyLocation(checkPassTimes);

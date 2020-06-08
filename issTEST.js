@@ -9,9 +9,10 @@
  */
 
 const request = require('request');
+let globalCallback;
 
 
-const fetchMyIP = function(callback) {
+const fetchMyIP = function(callback) { 
   // use request to fetch IP address from JSON API
   const website = 'https://api.ipify.org?format=json';
 
@@ -32,18 +33,12 @@ const fetchMyIP = function(callback) {
     const ip = JSON.parse(body).ip;
     // const ip = JSON.parse(response.body).ip;
 
-
-    // const ip = JSON.parse(body).ip;
-    // callback(null, ip);
-
-    /// !!!!!!!!!!!!!!!!
     if (null, ip) {
       console.log('My IP: ', ip);
       callback(null, ip);
 
     }
   });
-
 };
 
 const fetchCoordsByIP = function(ip, callback) {
@@ -93,7 +88,8 @@ const fetchCoordsByIP = function(ip, callback) {
  */
 const fetchISSFlyOverTimes = function(coords, callback) {
   
-  const website = `http://api.open-notify.org/iss-pass.json?lat=${coords.latitude}&lon=${coords.longitude}`;
+  const website = `http://api.open-notify.org/iss-pass.json?lat=${coords.latitude}&lon=${coords.longitude}`
+
 
   request(website, (error, response, body) => {
 
@@ -117,27 +113,35 @@ const fetchISSFlyOverTimes = function(coords, callback) {
   });
 };
 
+const checkPassesErrorAndSendTimes = function(error, nextPasses) {
+  if (error) {
+    return globalCallback(error, null);
+  }
+
+  globalCallback(null, nextPasses);
+};
+
+const checkLocErrorAndFetchTimes = function(error, loc) {
+  if (error) {
+    return globalCallback(error, null);
+  }
+
+  fetchISSFlyOverTimes(loc, checkPassesErrorAndSendTimes);
+};
+
+const checkIPErrorAndFetchCoords = function(error, ip) {
+  if (error) {
+    return globalCallback(error, null);
+  }
+
+  fetchCoordsByIP(ip, checkLocErrorAndFetchTimes);
+};
+
+
 // const nextISSTimesForMyLocation = function(callback) {
 const nextISSTimesForMyLocation = function(callback) {
-  fetchMyIP((error, ip) => {
-    if (error) {
-      return callback(error, null);
-    }
-
-    fetchCoordsByIP(ip, (error, loc) => {
-      if (error) {
-        return callback(error, null);
-      }
-
-      fetchISSFlyOverTimes(loc, (error, nextPasses) => {
-        if (error) {
-          return callback(error, null);
-        }
-
-        callback(null, nextPasses);
-      });
-    });
-  });
+  globalCallback = callback;
+  fetchMyIP(checkIPErrorAndFetchCoords);
 };
   
 
